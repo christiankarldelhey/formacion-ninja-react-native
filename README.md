@@ -1,50 +1,107 @@
-# Welcome to your Expo app 👋
+# Prueba Técnica: Motor de Búsqueda y Filtrado Avanzado
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## Objetivo
 
-## Get started
+En esta prueba técnica, se te presenta una aplicación de React Native con Expo que muestra un listado de cursos de oposiciones en España. La aplicación funciona, pero necesita la implementación de un motor de búsqueda avanzado en la pestaña "Explorar". El objetivo es evaluar tus habilidades en arquitectura de software, algoritmos de búsqueda, manejo de estructuras de datos complejas y optimización de JavaScript.
 
-1. Install dependencies
+## Tiempo estimado
 
-   ```bash
-   npm install
-   ```
+Esta prueba está diseñada para completarse en un máximo de 5-8 horas.
 
-2. Start the app
+## Contexto
 
-   ```bash
-   npx expo start
-   ```
+La aplicación es una plataforma educativa que ofrece cursos para preparar oposiciones. La pantalla principal muestra un listado de aproximadamente 100 cursos disponibles, y necesitamos un sistema de búsqueda y filtrado potente para que los usuarios puedan encontrar rápidamente lo que necesitan.
 
-In the output, you'll find options to open the app in a
+## Requisitos Principales
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Debes implementar un motor de búsqueda que cumpla con las siguientes características:
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+1. **Búsqueda por texto con indexación eficiente**
+   - Implementar un sistema de indexación que permita búsquedas rápidas
+   - Soportar búsqueda por título, categoría e instructor de los cursos
+   - Optimizar el rendimiento para grandes conjuntos de datos (>1000 cursos)
 
-## Get a fresh project
+2. **Filtros múltiples y combinados**
+   - Permitir filtrar por categorías (Administración, Justicia, Educación, etc.)
+   - Permitir filtrar por duración (corta, media, larga)
+   - Permitir filtrar por nivel de dificultad
+   - Soportar la combinación de múltiples filtros (AND/OR)
 
-When you're ready, run:
+3. **Búsqueda fuzzy y corrección de errores**
+   - Implementar algoritmos que toleren errores ortográficos
+   - Proporcionar sugerencias de búsqueda relevantes
+   - Manejar variaciones de palabras (plurales, acentos, etc.)
+
+4. **Optimización para búsquedas frecuentes**
+   - Implementar alguna estrategia de caché para búsquedas recientes
+   - Optimizar el rendimiento general del motor
+   - Proporcionar una experiencia de usuario fluida
+
+5. **Diseño visual**
+   - Se valorará muy positivamente las mejoras en el diseño de la interfaz de usuario
+   - Implementación de animaciones y transiciones fluidas
+   - Atención al detalle y usabilidad de la interfaz
+
+## Problemas conocidos que deben resolverse
+
+La aplicación presenta varios problemas que debes solucionar:
+
+1. El scrolling es lento y presenta "jank" (saltos o interrupciones).
+2. La carga inicial de la aplicación es demasiado lenta.
+3. La memoria utilizada por la aplicación es excesiva, provocando cierres inesperados en algunos dispositivos.
+
+## Estructura del Código
+
+Se pide implementar la solución utilizando la pestaña "Explore" de la aplicación existente, integrando los siguientes elementos:
+
+- **Interfaz de usuario**: Implementar campo de búsqueda, filtros y visualización de resultados
+- **Motor de búsqueda**: Crear la lógica necesaria para indexar y buscar cursos
+- **Gestión de estado**: Manejar el estado de búsqueda, filtros y resultados
+
+## Tareas
+
+1. **Analiza el código existente e identifica los problemas específicos** que causan el bajo rendimiento.
+2. **Implementa soluciones** para los problemas identificados, manteniendo o mejorando la experiencia de usuario actual.
+3. **Documenta tus cambios** explicando:
+   - Qué problemas identificaste.
+   - Qué soluciones implementaste y por qué.
+   - Qué mejoras adicionales propondrías si tuvieras más tiempo.
+
+## Criterios de Evaluación
+
+Tu solución será evaluada en base a:
+
+1. **Arquitectura de Software**: Diseño del sistema, separación de responsabilidades, patrones utilizados
+2. **Algoritmos y Estructuras de Datos**: Eficiencia de los algoritmos, estructuras de datos apropiadas
+3. **Optimización**: Rendimiento del motor de búsqueda, uso eficiente de memoria y CPU
+4. **Calidad del Código**: Legibilidad, mantenibilidad, reutilización
+5. **Experiencia de Usuario**: Fluidez y rapidez en la interfaz
+
+## Consideraciones importantes
+
+- No es necesario añadir funcionalidades nuevas además de las especificadas, solo optimizar el rendimiento y desarrollar el motor de búsqueda.
+- Asegúrate de que tus soluciones funcionen tanto en iOS como en Android.
+- La calidad del código y su mantenibilidad son tan importantes como las soluciones técnicas.
+- No cambies radicalmente el aspecto visual de la aplicación a menos que sea para mejorar la experiencia del usuario.
+- Se valorará más un diseño sólido y bien explicado que una implementación 100% funcional de todas las características.
+- Prioriza la calidad sobre la cantidad: es mejor implementar menos características pero de forma óptima.
+- Explica claramente los trade-offs considerados en tu solución.
+
+## Entrega
+
+Al finalizar, debes entregar:
+
+1. El código fuente completo de la aplicación con tus soluciones.
+2. Un documento breve explicando los problemas que encontraste y las soluciones implementadas.
+
+## Para ejecutar la aplicación
 
 ```bash
-npm run reset-project
+# Instalar dependencias
+npm install
+
+# Iniciar la aplicación
+npm start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+¡Buena suerte!
