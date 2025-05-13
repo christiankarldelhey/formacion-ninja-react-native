@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { FlatList, Platform, StyleSheet } from 'react-native';
+import { ActivityIndicator, FlatList, Platform, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CourseItem, CourseItemProps } from '@/components/CourseItem';
@@ -50,12 +50,13 @@ export default function CoursesScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <ThemedView style={styles.header}>
-        <ThemedText type="title">Cursos de Oposiciones</ThemedText>
+        <ThemedText style={styles.headerTitle}>Cursos de Oposiciones</ThemedText>
       </ThemedView>
 
       {loading ? (
         <ThemedView style={styles.loadingContainer}>
-          <ThemedText>Cargando cursos...</ThemedText>
+          <ActivityIndicator size="large" color="#fff" style={styles.spinner} />
+          <ThemedText style={styles.loadingText}>Cargando cursos...</ThemedText>
         </ThemedView>
       ) : (
         <FlatList
@@ -82,12 +83,24 @@ export default function CoursesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#000',
+  },
+  loadingText: {
+    color: '#fff',
+    marginTop: 12,
+  },
+  spinner: {
+    marginBottom: 8,
   },
   header: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: 'rgba(0, 0, 0, 0.1)',
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: '600',
   },
   listContent: {
     padding: 16,

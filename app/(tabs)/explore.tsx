@@ -49,7 +49,7 @@ export default function ExploreScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <ThemedView style={styles.header}>
-        <ThemedText type="title">Explorar Cursos</ThemedText>
+        <ThemedText style={styles.headerTitle}>Explorar Cursos</ThemedText>
         <ThemedText style={styles.subtitle}>
           Busca entre miles de cursos para oposiciones
         </ThemedText>
@@ -95,6 +95,17 @@ export default function ExploreScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#000',
+  },
+  header: {
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: '600',
   },
   loadingContainer: {
     flex: 1,
@@ -103,10 +114,6 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 16,
-  },
-  header: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
   },
   subtitle: {
     marginTop: 8,

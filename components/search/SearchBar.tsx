@@ -98,6 +98,7 @@ export function SearchBar({ query, onChangeQuery, onSearch, suggestions }: Searc
           onSubmitEditing={handleSubmit}
           returnKeyType="search"
           clearButtonMode="while-editing"
+          underlineColorAndroid="transparent"
         />
         {query.length > 0 && (
           <TouchableOpacity 
@@ -164,7 +165,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.2,
     shadowRadius: 5,
-    elevation: 2,
+    elevation: 2
   },
   input: {
     flex: 1,

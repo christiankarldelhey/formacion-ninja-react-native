@@ -30,28 +30,33 @@ export function CourseItem({
 }: CourseItemProps) {
   return (
     <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.7}>
-      <ThemedView style={styles.thumbnailContainer}>
-        {Platform.OS === 'web' ? (
-          <Image 
-            source={{ uri: thumbnail }} 
-            style={[styles.thumbnail, { objectFit: 'cover' }]} 
-            // Using backgroundColor as placeholder
-          />
-        ) : (
-          <ExpoImage 
-            source={{ uri: thumbnail }} 
-            style={styles.thumbnail} 
-            contentFit="cover"
-            // Using backgroundColor as placeholder
-            transition={200}
-            cachePolicy="memory-disk"
-          />
-        )}
-        <ThemedView style={styles.durationBadge}>
-          <ThemedText style={styles.durationText}>{duration}</ThemedText>
+      {/* Image Row */}
+      <ThemedView style={styles.imageRow}>
+        <ThemedView style={styles.thumbnailContainer}>
+          {Platform.OS === 'web' ? (
+            <Image 
+              source={{ uri: thumbnail }} 
+              style={[styles.thumbnail, { objectFit: 'cover' }]} 
+              // Using backgroundColor as placeholder
+            />
+          ) : (
+            <ExpoImage 
+              source={{ uri: thumbnail }} 
+              style={styles.thumbnail} 
+              contentFit="cover"
+              // Using backgroundColor as placeholder
+              transition={200}
+              cachePolicy="memory-disk"
+            />
+          )}
+          <ThemedView style={styles.durationBadge}>
+            <ThemedText style={styles.durationText}>{duration}</ThemedText>
+          </ThemedView>
         </ThemedView>
       </ThemedView>
-      <ThemedView style={styles.infoContainer}>
+
+      {/* Info Row */}
+      <ThemedView style={styles.infoRow}>
         <ThemedText type="defaultSemiBold" numberOfLines={2} style={styles.title}>
           {title}
         </ThemedText>
@@ -70,16 +75,22 @@ export function CourseItem({
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     marginBottom: 16,
+    backgroundColor: '#1a1a1a',
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  imageRow: {
+    width: '100%',
   },
   thumbnailContainer: {
-    width: 160,
-    height: 90,
+    width: '100%',
+    height: 200,
     borderRadius: 8,
     overflow: 'hidden',
     position: 'relative',
-    backgroundColor: '#f0f0f0', // Light gray placeholder
+    backgroundColor: '#2a2a2a',
   },
   thumbnail: {
     width: '100%',
@@ -98,21 +109,21 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 12,
   },
-  infoContainer: {
-    flex: 1,
-    marginLeft: 12,
-    justifyContent: 'space-between',
+  infoRow: {
+    padding: 12,
+    width: '100%',
   },
   title: {
     fontSize: 16,
     marginBottom: 4,
+    color: '#fff',
   },
   metaInfo: {
     justifyContent: 'flex-start',
   },
   instructor: {
     fontSize: 14,
-    opacity: 0.8,
+    color: '#ccc',
     marginBottom: 2,
   },
   statsRow: {
@@ -121,15 +132,15 @@ const styles = StyleSheet.create({
   },
   viewCount: {
     fontSize: 14,
-    opacity: 0.8,
+    color: '#999',
   },
   bullet: {
     fontSize: 14,
-    opacity: 0.8,
+    color: '#999',
     marginHorizontal: 4,
   },
   category: {
     fontSize: 14,
-    opacity: 0.8,
+    color: '#999',
   },
 }); 
