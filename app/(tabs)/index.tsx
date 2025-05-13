@@ -7,10 +7,14 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { COURSES_DATA } from '@/constants/CoursesData';
 
+// [FLOW STEP 3] - Main Screen Component
+// This is the main screen that displays all courses in a scrollable list
 export default function CoursesScreen() {
   const [courses, setCourses] = useState<CourseItemProps[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // [FLOW STEP 4] - Data Loading
+  // Simulate API loading with a 1-second delay
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -26,6 +30,8 @@ export default function CoursesScreen() {
     console.log(`Curso seleccionado: ${id}`);
   };
 
+  // [FLOW STEP 5] - Course Rendering
+  // Render each course using the CourseItem component
   const renderItem = ({ item }: { item: CourseItemProps }) => {
     return (
       <CourseItem

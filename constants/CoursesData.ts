@@ -1,3 +1,5 @@
+// [FLOW STEP 1] - Data Definition
+// This file serves as the data source for all courses in the application
 import { CourseItemProps } from '@/components/CourseItem';
 
 // Categorías de oposiciones
@@ -82,10 +84,14 @@ const COURSE_TITLES = [
 
 // Generar las miniaturas con Picsum para tener imágenes aleatorias
 function generateThumbnail(id: string): string {
-  return `https://picsum.photos/id/${parseInt(id) % 100 + 100}/320/180`;
+  // Using a specific seed to ensure we get the same image every time
+  const imageId = parseInt(id.replace('course_', '')) % 30 + 1;
+  return `https://picsum.photos/seed/course${imageId}/320/180`;
 }
 
-// Generar 100 cursos aleatorios
+// [FLOW STEP 2] - Data Generation
+// Generate 100 random courses by combining the above data arrays
+// This is what will be consumed by the main CoursesScreen
 export const COURSES_DATA: CourseItemProps[] = Array.from({ length: 100 }, (_, index) => {
   const id = `course_${index + 1}`;
   return {

@@ -1,9 +1,11 @@
-import { Image } from 'expo-image';
-import { StyleSheet, TouchableOpacity } from 'react-native';
+import { Image as ExpoImage } from 'expo-image';
+import { StyleSheet, TouchableOpacity, Image, Platform } from 'react-native';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 
+// [FLOW STEP 6] - Course Item Interface
+// Define the shape of data required for each course item
 export type CourseItemProps = {
   id: string;
   title: string;
@@ -15,6 +17,8 @@ export type CourseItemProps = {
   onPress?: () => void;
 };
 
+// [FLOW STEP 7] - Course Item Component
+// Reusable component that displays a single course with consistent styling
 export function CourseItem({
   title,
   category,
@@ -27,7 +31,11 @@ export function CourseItem({
   return (
     <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.7}>
       <ThemedView style={styles.thumbnailContainer}>
-        <Image source={{ uri: thumbnail }} style={styles.thumbnail} contentFit="cover" />
+        {Platform.OS === 'web' ? (
+          <Image source={{ uri: thumbnail }} style={[styles.thumbnail, { objectFit: 'cover' }]} />
+        ) : (
+          <ExpoImage source={{ uri: thumbnail }} style={styles.thumbnail} contentFit="cover" />
+        )}
         <ThemedView style={styles.durationBadge}>
           <ThemedText style={styles.durationText}>{duration}</ThemedText>
         </ThemedView>
