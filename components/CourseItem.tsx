@@ -32,9 +32,20 @@ export function CourseItem({
     <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.7}>
       <ThemedView style={styles.thumbnailContainer}>
         {Platform.OS === 'web' ? (
-          <Image source={{ uri: thumbnail }} style={[styles.thumbnail, { objectFit: 'cover' }]} />
+          <Image 
+            source={{ uri: thumbnail }} 
+            style={[styles.thumbnail, { objectFit: 'cover' }]} 
+            // Using backgroundColor as placeholder
+          />
         ) : (
-          <ExpoImage source={{ uri: thumbnail }} style={styles.thumbnail} contentFit="cover" />
+          <ExpoImage 
+            source={{ uri: thumbnail }} 
+            style={styles.thumbnail} 
+            contentFit="cover"
+            // Using backgroundColor as placeholder
+            transition={200}
+            cachePolicy="memory-disk"
+          />
         )}
         <ThemedView style={styles.durationBadge}>
           <ThemedText style={styles.durationText}>{duration}</ThemedText>
@@ -68,6 +79,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     overflow: 'hidden',
     position: 'relative',
+    backgroundColor: '#f0f0f0', // Light gray placeholder
   },
   thumbnail: {
     width: '100%',

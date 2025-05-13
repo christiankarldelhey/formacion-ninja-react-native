@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { FlatList, Platform, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -32,7 +32,7 @@ export default function CoursesScreen() {
 
   // [FLOW STEP 5] - Course Rendering
   // Render each course using the CourseItem component
-  const renderItem = ({ item }: { item: CourseItemProps }) => {
+  const renderItem = useCallback(({ item }: { item: CourseItemProps }) => {
     return (
       <CourseItem
         id={item.id}
@@ -45,7 +45,7 @@ export default function CoursesScreen() {
         onPress={() => handleCourseSelection(item.id)}
       />
     );
-  };
+  }, []);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -64,7 +64,9 @@ export default function CoursesScreen() {
           renderItem={renderItem}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
-          initialNumToRender={100}
+          initialNumToRender={10}
+          maxToRenderPerBatch={5}
+          windowSize={5}
           onEndReachedThreshold={0.1}
           getItemLayout={(data, index) => ({
             length: 120,
