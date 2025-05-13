@@ -2,14 +2,26 @@ import type { CourseItemProps } from '@/components/CourseItem';
 import type { FilterOption, Filters } from '@/components/search/FilterPanel';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+/**
+ * SearchIndex implements a full-text search engine with filtering capabilities.
+ * It uses an inverted index for efficient text search and maintains separate maps
+ * for category, duration, and level-based filtering.
+ */
 class SearchIndex {
+  // Original course documents
   private documents: CourseItemProps[] = [];
+  // Maps tokenized words to document IDs for fast lookup
   private invertedIndex: Record<string, Set<string>> = {};
+  // Quick access to course details by ID
   private documentMap: Record<string, CourseItemProps> = {};
+  // Filter options with counts for UI
   private categoryMap: Record<string, FilterOption> = {};
   private durationMap: Record<string, FilterOption> = {};
   private levelMap: Record<string, FilterOption> = {};
   
+  /**
+   * Initializes the search engine with course documents and builds all necessary indexes
+   */
   constructor(documents: CourseItemProps[]) {
     this.documents = documents;
     this.buildIndex();
@@ -18,6 +30,10 @@ class SearchIndex {
     this.buildLevelMap();
   }
 
+  /**
+   * Builds the inverted index for full-text search.
+   * Tokenizes course title, category, and instructor, then maps each token to course IDs.
+   */
   private buildIndex(): void {
     this.documents.forEach(doc => {
       this.documentMap[doc.id] = doc;
@@ -33,6 +49,10 @@ class SearchIndex {
     });
   }
 
+  /**
+   * Creates a map of course categories with their counts.
+   * Used for the category filter UI and filtering logic.
+   */
   private buildCategoryMap(): void {
     const categories = new Map<string, number>();
     
@@ -53,6 +73,10 @@ class SearchIndex {
     });
   }
 
+  /**
+   * Categorizes courses into duration ranges (short, medium, long)
+   * and maintains counts for each range.
+   */
   private buildDurationMap(): void {
     const durationRanges = {
       'short': { id: 'short', label: 'Corta (< 3h)', min: 0, max: 180, count: 0 },
@@ -81,6 +105,10 @@ class SearchIndex {
     });
   }
 
+  /**
+   * Analyzes course titles to determine difficulty levels
+   * and maintains counts for beginner, intermediate, and advanced courses.
+   */
   private buildLevelMap(): void {
     const levels = {
       'beginner': { id: 'beginner', label: 'Principiante', count: 0 },
@@ -112,6 +140,14 @@ class SearchIndex {
     return parseInt(parts[0]) * 60 + parseInt(parts[1]);
   }
 
+  /**
+   * Converts text into searchable tokens:
+   * 1. Converts to lowercase
+   * 2. Removes special characters
+   * 3. Splits into words
+   * 4. Removes short words
+   * 5. Applies word stemming
+   */
   private tokenize(text: string): string[] {
     return text
       .toLowerCase()
@@ -127,6 +163,11 @@ class SearchIndex {
       .replace(/[^\w]/g, '_');
   }
 
+  /**
+   * Basic Spanish word stemming.
+   * Removes common suffixes to match similar words
+   * (e.g., 'programación' and 'programador' -> 'program')
+   */
   private stemWord(word: string): string {
     if (word.endsWith('es') && word.length > 4) {
       word = word.slice(0, -2);
@@ -145,6 +186,10 @@ class SearchIndex {
     return word;
   }
 
+  /**
+   * Calculates the edit distance between two strings.
+   * Used for fuzzy search to find similar words even with typos.
+   */
   private levenshteinDistance(a: string, b: string): number {
     const matrix: number[][] = [];
     
@@ -170,6 +215,12 @@ class SearchIndex {
     return matrix[a.length][b.length];
   }
 
+  /**
+   * Main search function that combines:
+   * 1. Full-text search (exact and fuzzy)
+   * 2. Filter application (category, duration, level)
+   * 3. Result ranking
+   */
   search(query: string, filters: Filters): CourseItemProps[] {
     if (!query && !this.hasActiveFilters(filters)) {
       return this.documents;
@@ -208,6 +259,10 @@ class SearchIndex {
     );
   }
 
+  /**
+   * Performs exact match search using the inverted index.
+   * Returns document IDs that contain ALL query tokens.
+   */
   private exactSearch(queryTokens: string[]): string[] {
     const token = queryTokens[0];
     let matchingDocIds = new Set<string>();
@@ -231,6 +286,10 @@ class SearchIndex {
     return Array.from(matchingDocIds);
   }
 
+  /**
+   * Performs fuzzy search for typo tolerance.
+   * Uses Levenshtein distance to find similar words.
+   */
   private fuzzySearch(queryTokens: string[]): string[] {
     const fuzzyMatches = new Set<string>();
     const allTokens = Object.keys(this.invertedIndex);
@@ -250,6 +309,12 @@ class SearchIndex {
     return Array.from(fuzzyMatches);
   }
 
+  /**
+   * Applies selected filters to search results:
+   * - Category filter: exact match
+   * - Duration filter: range-based
+   * - Level filter: based on title analysis
+   */
   private applyFilters(resultIds: Set<string>, filters: Filters): Set<string> {
     return new Set(
       Array.from(resultIds).filter(id => {
@@ -339,6 +404,13 @@ class SearchIndex {
   }
 }
 
+/**
+ * React hook that provides search functionality with:
+ * - Debounced search
+ * - Auto-suggestions
+ * - Filter management
+ * - Loading states
+ */
 export function useSearchEngine(courses: CourseItemProps[]) {
   const [query, setQuery] = useState('');
   const [filters, setFilters] = useState<Filters>({

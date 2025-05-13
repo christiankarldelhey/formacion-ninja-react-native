@@ -18,7 +18,10 @@ const MAPPING = {
   'paperplane.fill': 'send',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
-  'book.fill': 'menu-book',  // Adding mapping for courses icon
+  'book.fill': 'menu-book',
+  'magnifyingglass': 'search',  // Search icon
+  'clock': 'schedule',          // Recent searches icon
+  'xmark.circle.fill': 'cancel' // Clear input icon
 } as IconMapping;
 
 /**

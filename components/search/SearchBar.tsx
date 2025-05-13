@@ -196,6 +196,7 @@ const styles = StyleSheet.create({
   suggestionItem: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#1a1a1a',
     padding: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: 'rgba(0, 0, 0, 0.1)',
