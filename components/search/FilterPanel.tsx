@@ -4,7 +4,7 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import React, { useState } from 'react';
-import { ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { StyleSheet, ScrollView, TouchableOpacity, View } from 'react-native';
 
 export type FilterOption = {
   id: string;
@@ -94,18 +94,11 @@ export function FilterPanel({
       ...levels.filter(lvl => selectedFilters.levels.includes(lvl.id)),
     ];
 
-    if (allSelected.length === 0) return null;
-
     return (
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false}
-        style={styles.chipsContainer}
-        contentContainerStyle={styles.chipsContent}
-      >
+      <View style={styles.filtersContainer}>
         {allSelected.map(item => (
-          <ThemedView key={item.id} style={styles.chip}>
-            <ThemedText style={styles.chipText}>{item.label}</ThemedText>
+          <TouchableOpacity key={item.id} style={styles.filterChip}>
+            <ThemedText style={styles.filterChipText}>{item.label}</ThemedText>
             <TouchableOpacity
               onPress={() => {
                 if (categories.find(cat => cat.id === item.id)) {
@@ -123,165 +116,88 @@ export function FilterPanel({
                 color={Colors[colorScheme].icon} 
               />
             </TouchableOpacity>
-          </ThemedView>
+          </TouchableOpacity>
         ))}
         
-        <TouchableOpacity onPress={onClearFilters} style={styles.clearChip}>
-          <ThemedText style={styles.clearChipText}>Borrar todos</ThemedText>
-        </TouchableOpacity>
-      </ScrollView>
+        {allSelected.length > 0 && (
+          <TouchableOpacity onPress={onClearFilters} style={styles.clearChip}>
+            <ThemedText style={styles.clearChipText}>Borrar todos</ThemedText>
+          </TouchableOpacity>
+        )}
+      </View>
     );
   };
 
   const renderFilterSections = () => {
-    const expandedSectionElement = (() => {
-      if (expandedSection === 'categories') {
-        return (
-          <ThemedView style={styles.optionsContainer}>
-            {categories.map(category => (
-              <TouchableOpacity
-                key={category.id}
-                style={styles.optionItem}
-                onPress={() => toggleCategoryFilter(category.id)}
-              >
-                <ThemedView style={styles.checkboxContainer}>
-                  <ThemedView 
-                    style={[
-                      styles.checkbox,
-                      selectedFilters.categories.includes(category.id) && styles.checkboxSelected
-                    ]}
-                  >
-                    {selectedFilters.categories.includes(category.id) && (
-                      <IconSymbol 
-                        name="checkmark" 
-                        size={12} 
-                        color="white" 
-                      />
-                    )}
-                  </ThemedView>
-                </ThemedView>
-                <ThemedText>{category.label}</ThemedText>
-                {category.count !== undefined && (
-                  <ThemedText style={styles.countText}>({category.count})</ThemedText>
-                )}
-              </TouchableOpacity>
-            ))}
-          </ThemedView>
-        );
-      } else if (expandedSection === 'durations') {
-        return (
-          <ThemedView style={styles.optionsContainer}>
-            {durations.map(duration => (
-              <TouchableOpacity
-                key={duration.id}
-                style={styles.optionItem}
-                onPress={() => toggleDurationFilter(duration.id)}
-              >
-                <ThemedView style={styles.checkboxContainer}>
-                  <ThemedView 
-                    style={[
-                      styles.checkbox,
-                      selectedFilters.durations.includes(duration.id) && styles.checkboxSelected
-                    ]}
-                  >
-                    {selectedFilters.durations.includes(duration.id) && (
-                      <IconSymbol 
-                        name="checkmark" 
-                        size={12} 
-                        color="white" 
-                      />
-                    )}
-                  </ThemedView>
-                </ThemedView>
-                <ThemedText>{duration.label}</ThemedText>
-                {duration.count !== undefined && (
-                  <ThemedText style={styles.countText}>({duration.count})</ThemedText>
-                )}
-              </TouchableOpacity>
-            ))}
-          </ThemedView>
-        );
-      } else if (expandedSection === 'levels') {
-        return (
-          <ThemedView style={styles.optionsContainer}>
-            {levels.map(level => (
-              <TouchableOpacity
-                key={level.id}
-                style={styles.optionItem}
-                onPress={() => toggleLevelFilter(level.id)}
-              >
-                <ThemedView style={styles.checkboxContainer}>
-                  <ThemedView 
-                    style={[
-                      styles.checkbox,
-                      selectedFilters.levels.includes(level.id) && styles.checkboxSelected
-                    ]}
-                  >
-                    {selectedFilters.levels.includes(level.id) && (
-                      <IconSymbol 
-                        name="checkmark" 
-                        size={12} 
-                        color="white" 
-                      />
-                    )}
-                  </ThemedView>
-                </ThemedView>
-                <ThemedText>{level.label}</ThemedText>
-                {level.count !== undefined && (
-                  <ThemedText style={styles.countText}>({level.count})</ThemedText>
-                )}
-              </TouchableOpacity>
-            ))}
-          </ThemedView>
-        );
-      }
-      return null;
-    })();
+    const renderSection = (section: keyof Filters, options: FilterOption[]) => {
+      return (
+        <View style={styles.filterSection}>
+          <TouchableOpacity 
+            style={styles.sectionHeader} 
+            onPress={() => toggleSection(section)}
+          >
+            <ThemedText>{section === 'categories' ? 'Categorías' : section === 'durations' ? 'Duración' : 'Nivel'}</ThemedText>
+            <IconSymbol 
+              name={expandedSection === section ? 'chevron.up' : 'chevron.down'} 
+              size={16} 
+              color={Colors[colorScheme].icon} 
+            />
+          </TouchableOpacity>
+          
+          {expandedSection === section && (
+            <View style={styles.optionsContainer}>
+              <ScrollView style={styles.scrollContainer}>
+                <View style={styles.optionsContent}>
+                  {options.map(option => (
+                    <TouchableOpacity
+                      key={option.id}
+                      style={styles.optionItem}
+                      onPress={() => {
+                        if (section === 'categories') {
+                          toggleCategoryFilter(option.id);
+                        } else if (section === 'durations') {
+                          toggleDurationFilter(option.id);
+                        } else if (section === 'levels') {
+                          toggleLevelFilter(option.id);
+                        }
+                      }}
+                    >
+                      <View style={styles.checkboxContainer}>
+                        <View 
+                          style={[
+                            styles.checkbox,
+                            selectedFilters[section].includes(option.id) && styles.checkboxSelected
+                          ]}
+                        >
+                          {selectedFilters[section].includes(option.id) && (
+                            <IconSymbol 
+                              name="checkmark" 
+                              size={12} 
+                              color="white" 
+                            />
+                          )}
+                        </View>
+                      </View>
+                      <ThemedText>{option.label}</ThemedText>
+                      {option.count !== undefined && (
+                        <ThemedText style={styles.countText}>({option.count})</ThemedText>
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </ScrollView>
+            </View>
+          )}
+        </View>
+      );
+    };
 
     return (
-      <ThemedView style={styles.filterSections}>
-        <TouchableOpacity 
-          style={styles.sectionHeader} 
-          onPress={() => toggleSection('categories')}
-        >
-          <ThemedText>Categorías</ThemedText>
-          <IconSymbol 
-            name={expandedSection === 'categories' ? 'chevron.up' : 'chevron.down'} 
-            size={16} 
-            color={Colors[colorScheme].icon} 
-          />
-        </TouchableOpacity>
-        
-        {expandedSection === 'categories' && expandedSectionElement}
-
-        <TouchableOpacity 
-          style={styles.sectionHeader} 
-          onPress={() => toggleSection('durations')}
-        >
-          <ThemedText>Duración</ThemedText>
-          <IconSymbol 
-            name={expandedSection === 'durations' ? 'chevron.up' : 'chevron.down'} 
-            size={16} 
-            color={Colors[colorScheme].icon} 
-          />
-        </TouchableOpacity>
-        
-        {expandedSection === 'durations' && expandedSectionElement}
-
-        <TouchableOpacity 
-          style={styles.sectionHeader} 
-          onPress={() => toggleSection('levels')}
-        >
-          <ThemedText>Nivel</ThemedText>
-          <IconSymbol 
-            name={expandedSection === 'levels' ? 'chevron.up' : 'chevron.down'} 
-            size={16} 
-            color={Colors[colorScheme].icon} 
-          />
-        </TouchableOpacity>
-        
-        {expandedSection === 'levels' && expandedSectionElement}
-      </ThemedView>
+      <View>
+        {renderSection('categories', categories)}
+        {renderSection('durations', durations)}
+        {renderSection('levels', levels)}
+      </View>
     );
   };
 
@@ -305,9 +221,10 @@ export function FilterPanel({
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 8,
-    maxHeight: 300,
+    paddingVertical: 12,
+    backgroundColor: '#1a1a1a',
+    position: 'relative',
+    zIndex: 2,
   },
   header: {
     flexDirection: 'row',
@@ -319,57 +236,36 @@ const styles = StyleSheet.create({
     color: '#0a7ea4',
     fontSize: 14,
   },
-  chipsContainer: {
-    marginBottom: 12,
-  },
-  chipsContent: {
-    paddingRight: 16,
-  },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(10, 126, 164, 0.1)',
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    marginRight: 8,
-  },
-  chipText: {
-    fontSize: 14,
-    marginRight: 4,
-  },
-  clearChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.1)',
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  clearChipText: {
-    fontSize: 14,
-    color: '#0a7ea4',
-  },
-  filterSections: {
-    marginBottom: 8,
+  filterSection: {
+    marginBottom: 16,
   },
   sectionHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
   },
   optionsContainer: {
+    backgroundColor: '#2a2a2a',
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  scrollContainer: {
+    flex: 1,
+  },
+  optionsContent: {
     paddingVertical: 8,
-    maxHeight: 150,
   },
   optionItem: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 8,
+    paddingHorizontal: 16,
+    marginVertical: 2,
   },
   checkboxContainer: {
     marginRight: 12,
@@ -379,16 +275,48 @@ const styles = StyleSheet.create({
     height: 20,
     borderRadius: 4,
     borderWidth: 2,
-    borderColor: 'rgba(0, 0, 0, 0.3)',
+    borderColor: '#4a4a4a',
     alignItems: 'center',
     justifyContent: 'center',
   },
   checkboxSelected: {
-    backgroundColor: '#0a7ea4',
-    borderColor: '#0a7ea4',
+    backgroundColor: '#007AFF',
+    borderColor: '#007AFF',
   },
   countText: {
-    marginLeft: 6,
-    opacity: 0.5,
+    marginLeft: 8,
+    opacity: 0.7,
+  },
+  filtersContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 8,
+    gap: 8,
+  },
+  filterChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#2a2a2a',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#007AFF',
+  },
+  filterChipText: {
+    marginRight: 4,
+  },
+  clearChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#2a2a2a',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#ff3b30',
+  },
+  clearChipText: {
+    color: '#ff3b30',
   },
 }); 

@@ -71,23 +71,25 @@ export default function ExploreScreen() {
         </ThemedText>
       </ThemedView>
       
-      {showFilters && (
-        <FilterPanel
-          categories={getCategories()}
-          durations={getDurations()}
-          levels={getLevels()}
-          selectedFilters={filters}
-          onFilterChange={setFilters}
-          onClearFilters={clearFilters}
-        />
-      )}
+      <ThemedView style={styles.contentContainer}>
+        {showFilters && (
+          <FilterPanel
+            categories={getCategories()}
+            durations={getDurations()}
+            levels={getLevels()}
+            selectedFilters={filters}
+            onFilterChange={setFilters}
+            onClearFilters={clearFilters}
+          />
+        )}
 
-      <SearchResults 
-        results={searchResults}
-        isSearching={isSearching}
-        searchQuery={query}
-        filters={filters}
-      />
+        <SearchResults 
+          results={searchResults}
+          isSearching={isSearching}
+          searchQuery={query}
+          filters={filters}
+        />
+      </ThemedView>
     </SafeAreaView>
   );
 }
@@ -126,5 +128,10 @@ const styles = StyleSheet.create({
   filtersToggle: {
     color: '#0a7ea4',
     fontWeight: '600',
+  },
+  contentContainer: {
+    flex: 1,
+    position: 'relative',
+    zIndex: 1,
   },
 });

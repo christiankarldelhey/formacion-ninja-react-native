@@ -101,6 +101,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 16,
+    position: 'relative',
+    zIndex: 1,  // Lower than FilterPanel
   },
   listContent: {
     paddingTop: 16,

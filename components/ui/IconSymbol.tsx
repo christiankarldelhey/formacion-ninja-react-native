@@ -18,10 +18,12 @@ const MAPPING = {
   'paperplane.fill': 'send',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
+  'chevron.up': 'expand-less',
+  'chevron.down': 'expand-more',
   'book.fill': 'menu-book',
-  'magnifyingglass': 'search',  // Search icon
-  'clock': 'schedule',          // Recent searches icon
-  'xmark.circle.fill': 'cancel' // Clear input icon
+  'magnifyingglass': 'search',  
+  'clock': 'schedule',          
+  'xmark.circle.fill': 'cancel' 
 } as IconMapping;
 
 /**
