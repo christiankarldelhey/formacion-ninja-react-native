@@ -16,33 +16,15 @@ export function SearchBar({ query, onChangeQuery, onSearch, suggestions }: Searc
   const inputRef = useRef<TextInput>(null);
   const colorScheme = useColorScheme() ?? 'light';
 
-  const handleFocus = () => {
-    setIsFocused(true);
-    if (query.length > 0 && suggestions.length > 0) {
-      setShowSuggestions(true);
-      Animated.timing(animatedHeight, {
-        toValue: Math.min(suggestions.length * 44, 220),
-        duration: 200,
-        useNativeDriver: false,
-      }).start();
-    }
-  };
+  const CATEGORY_HEADER_HEIGHT = 36; // Height of the category header
+  const SUGGESTION_ITEM_HEIGHT = 48; // Height of each suggestion item
 
-  const handleBlur = () => {
-    setIsFocused(false);
-    Animated.timing(animatedHeight, {
-      toValue: 0,
-      duration: 200,
-      useNativeDriver: false,
-    }).start(() => setShowSuggestions(false));
-  };
-
-  const handleChangeText = (text: string) => {
-    onChangeQuery(text);
-    if (text.length > 0 && suggestions.length > 0) {
+  const updateSuggestionVisibility = (shouldShow: boolean) => {
+    if (shouldShow && suggestions.length > 0) {
       setShowSuggestions(true);
+      const totalHeight = CATEGORY_HEADER_HEIGHT + (suggestions.length * SUGGESTION_ITEM_HEIGHT);
       Animated.timing(animatedHeight, {
-        toValue: Math.min(suggestions.length * 44, 220),
+        toValue: Math.min(totalHeight, 220),
         duration: 200,
         useNativeDriver: false,
       }).start();
@@ -53,6 +35,28 @@ export function SearchBar({ query, onChangeQuery, onSearch, suggestions }: Searc
         useNativeDriver: false,
       }).start(() => setShowSuggestions(false));
     }
+  };
+
+  // Update suggestions visibility when suggestions array changes
+  React.useEffect(() => {
+    if (isFocused) {
+      updateSuggestionVisibility(suggestions.length > 0);
+    }
+  }, [suggestions, isFocused]);
+
+  const handleFocus = () => {
+    setIsFocused(true);
+    updateSuggestionVisibility(suggestions.length > 0);
+  };
+
+  const handleBlur = () => {
+    setIsFocused(false);
+    updateSuggestionVisibility(false);
+  };
+
+  const handleChangeText = (text: string) => {
+    onChangeQuery(text);
+    updateSuggestionVisibility(text.length > 0);
   };
 
   const handleSubmit = () => {
@@ -68,14 +72,22 @@ export function SearchBar({ query, onChangeQuery, onSearch, suggestions }: Searc
 
   const parseHighlight = (html: string) => {
     const parts = html.split(/(<b>|<\/b>)/);
-    return parts.map((part, i) =>
-      part === '<b>' || part === '</b>' ? null :
-      html.includes('<b>') && i % 2 === 1 ? (
-        <Text key={i} style={{ fontWeight: '700' }}>{part}</Text>
-      ) : (
-        <Text key={i}>{part}</Text>
-      )
-    );
+    let isBold = false;
+    return parts.map((part, i) => {
+      if (part === '<b>') {
+        isBold = true;
+        return null;
+      }
+      if (part === '</b>') {
+        isBold = false;
+        return null;
+      }
+      return (
+        <Text key={i} style={isBold ? { fontWeight: 'bold' } : undefined}>
+          {part}
+        </Text>
+      );
+    }).filter(Boolean);
   };
 
   return (
@@ -168,8 +180,12 @@ export function SearchBar({ query, onChangeQuery, onSearch, suggestions }: Searc
 
                     {item.reason && (
                       <Text numberOfLines={1} style={{ color: Colors[colorScheme].text }}>
-                        <Text>{item.reason.label}: </Text>
-                        {parseHighlight(item.reason.highlight)}
+                        {item.reason.value !== item.text && (
+                          <>
+                            <Text>{item.reason.label}: </Text>
+                            {parseHighlight(item.reason.highlight)}
+                          </>
+                        )}
                       </Text>
                     )}
                   </View>
