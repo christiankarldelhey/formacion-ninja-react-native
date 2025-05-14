@@ -6,11 +6,16 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import React, { useRef, useState } from 'react';
 import { Animated, FlatList, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
 
+type Suggestion = {
+  text: string;
+  category: 'title' | 'instructor' | 'category';
+};
+
 type SearchBarProps = {
   query: string;
   onChangeQuery: (text: string) => void;
   onSearch: () => void;
-  suggestions: string[];
+  suggestions: Suggestion[];
 };
 
 export function SearchBar({ query, onChangeQuery, onSearch, suggestions }: SearchBarProps) {
@@ -122,22 +127,41 @@ export function SearchBar({ query, onChangeQuery, onSearch, suggestions }: Searc
           ]}
         >
           <FlatList
-            data={suggestions.slice(0, 5)}
-            keyExtractor={(item) => item}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.suggestionItem}
-                onPress={() => handleSelectSuggestion(item)}
-              >
-                <IconSymbol 
-                  name="clock" 
-                  size={16} 
-                  color={Colors[colorScheme].icon} 
-                  style={styles.suggestionIcon}
-                />
-                <ThemedText numberOfLines={1}>{item}</ThemedText>
-              </TouchableOpacity>
-            )}
+            data={suggestions}
+            keyExtractor={(item) => `${item.category}-${item.text}`}
+            renderItem={({ item, index }) => {
+              // Add category header if it's the first item or if the category changes
+              const prevItem = index > 0 ? suggestions[index - 1] : null;
+              const showHeader = !prevItem || prevItem.category !== item.category;
+
+              return (
+                <>
+                  {showHeader && (
+                    <ThemedView style={styles.categoryHeader}>
+                      <ThemedText style={styles.categoryHeaderText}>
+                        {item.category === 'title' ? 'Cursos' : 
+                         item.category === 'instructor' ? 'Instructores' : 
+                         'Categorías'}
+                      </ThemedText>
+                    </ThemedView>
+                  )}
+                  <TouchableOpacity
+                    style={styles.suggestionItem}
+                    onPress={() => handleSelectSuggestion(item.text)}
+                  >
+                    <IconSymbol 
+                      name={item.category === 'title' ? 'doc.text' : 
+                           item.category === 'instructor' ? 'person' : 
+                           'folder'}
+                      size={16} 
+                      color={Colors[colorScheme].icon} 
+                      style={styles.suggestionIcon}
+                    />
+                    <ThemedText numberOfLines={1}>{item.text}</ThemedText>
+                  </TouchableOpacity>
+                </>
+              );
+            }}
           />
         </Animated.View>
       )}
@@ -203,5 +227,15 @@ const styles = StyleSheet.create({
   },
   suggestionIcon: {
     marginRight: 12,
+  },
+  categoryHeader: {
+    backgroundColor: '#2a2a2a',
+    padding: 8,
+    paddingHorizontal: 12,
+  },
+  categoryHeaderText: {
+    fontSize: 12,
+    opacity: 0.7,
+    textTransform: 'uppercase',
   },
 }); 

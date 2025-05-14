@@ -37,6 +37,11 @@ export default function ExploreScreen() {
     return () => clearTimeout(timer);
   }, []);
 
+  type Suggestion = {
+    text: string;
+    category: 'title' | 'instructor' | 'category';
+  };
+
   if (isLoading) {
     return (
       <SafeAreaView style={styles.loadingContainer} edges={['top']}>
@@ -59,7 +64,7 @@ export default function ExploreScreen() {
         query={query} 
         onChangeQuery={setQuery} 
         onSearch={performSearch}
-        suggestions={searchSuggestions}
+        suggestions={searchSuggestions as Suggestion[]}
       />
       
       <ThemedView style={styles.filtersToggleContainer}>

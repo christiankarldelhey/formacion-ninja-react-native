@@ -18,6 +18,7 @@ class SearchIndex {
   private categoryMap: Record<string, FilterOption> = {};
   private durationMap: Record<string, FilterOption> = {};
   private levelMap: Record<string, FilterOption> = {};
+  private cache: Map<string, CourseItemProps[]> = new Map();
   
   /**
    * Initializes the search engine with course documents and builds all necessary indexes
@@ -149,12 +150,21 @@ class SearchIndex {
    * 5. Applies word stemming
    */
   private tokenize(text: string): string[] {
-    return text
-      .toLowerCase()
-      .replace(/[^\w\sáéíóúüñ]/g, '')
+    const normalized = this.normalizeText(text);
+    return normalized
+      .replace(/[^\w\s]/g, '')
       .split(/\s+/)
       .filter(token => token.length >= 2)
       .map(token => this.stemWord(token));
+  }
+
+  private normalizeText(text: string): string {
+    return text
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/ñ/g, 'n')
+      .replace(/ü/g, 'u')
+      .toLowerCase();
   }
 
   private normalizeForId(text: string): string {
@@ -169,20 +179,27 @@ class SearchIndex {
    * (e.g., 'programación' and 'programador' -> 'program')
    */
   private stemWord(word: string): string {
-    if (word.endsWith('es') && word.length > 4) {
-      word = word.slice(0, -2);
-    } else if (word.endsWith('s') && word.length > 3) {
-      word = word.slice(0, -1);
-    }
-    
-    const suffixes = ['ción', 'ciones', 'mente', 'dad', 'dades', 'ando', 'endo', 'ado', 'ido', 'aba', 'ía'];
+    const suffixes = [
+      'ciones', 'cion', 'mente', 'idades', 'idad',
+      'icamente', 'ista', 'istas', 'izar', 'izado', 'izacion',
+      'ante', 'antes', 'able', 'ibles',
+      'ador', 'adores', 'adora', 'adoras',
+      'ando', 'iendo', 'ado', 'ido', 'aba', 'ia', 'ar', 'er', 'ir'
+    ];
+  
     for (const suffix of suffixes) {
       if (word.endsWith(suffix) && word.length > suffix.length + 2) {
         word = word.slice(0, -suffix.length);
         break;
       }
     }
-    
+  
+    if (word.endsWith('es') && word.length > 4) {
+      word = word.slice(0, -2);
+    } else if (word.endsWith('s') && word.length > 3) {
+      word = word.slice(0, -1);
+    }
+  
     return word;
   }
 
@@ -222,18 +239,24 @@ class SearchIndex {
    * 3. Result ranking
    */
   search(query: string, filters: Filters): CourseItemProps[] {
+    const cacheKey = JSON.stringify({ query, filters });
+  
+    if (this.cache.has(cacheKey)) {
+      return this.cache.get(cacheKey)!;
+    }
+  
     if (!query && !this.hasActiveFilters(filters)) {
+      this.cache.set(cacheKey, this.documents);
       return this.documents;
     }
-    
+  
     let resultIds: Set<string> = new Set();
-    
+  
     if (query) {
       const queryTokens = this.tokenize(query);
-      
       const exactMatches = this.exactSearch(queryTokens);
       exactMatches.forEach(id => resultIds.add(id));
-      
+  
       if (resultIds.size < 10) {
         const fuzzyMatches = this.fuzzySearch(queryTokens);
         fuzzyMatches.forEach(id => resultIds.add(id));
@@ -241,15 +264,18 @@ class SearchIndex {
     } else {
       this.documents.forEach(doc => resultIds.add(doc.id));
     }
-    
+  
     if (this.hasActiveFilters(filters)) {
       resultIds = this.applyFilters(resultIds, filters);
     }
-    
+  
     const results = Array.from(resultIds).map(id => this.documentMap[id]);
-    
-    return results.sort((a, b) => a.title.localeCompare(b.title));
+    const sorted = results.sort((a, b) => a.title.localeCompare(b.title));
+  
+    this.cache.set(cacheKey, sorted);
+    return sorted;
   }
+  
 
   private hasActiveFilters(filters: Filters): boolean {
     return (
@@ -358,37 +384,74 @@ class SearchIndex {
     );
   }
 
-  getSuggestions(query: string, limit = 5): string[] {
+  getSuggestions(query: string, limit = 5): { text: string; category: 'title' | 'instructor' | 'category' }[] {
     if (!query) return [];
     
     const queryTokens = this.tokenize(query);
-    
     if (queryTokens.length === 0) return [];
     
     const firstToken = queryTokens[0];
-    const suggestions = new Set<string>();
+    const titleSuggestions = new Set<string>();
+    const instructorSuggestions = new Set<string>();
+    const categorySuggestions = new Set<string>();
     
     this.documents.forEach(doc => {
-      const docTokens = this.tokenize(doc.title);
-      
-      for (const token of docTokens) {
+      // Title suggestions
+      const titleTokens = this.tokenize(doc.title);
+      for (const token of titleTokens) {
         if (token.startsWith(firstToken)) {
-          suggestions.add(doc.title);
-          if (suggestions.size >= limit) break;
+          titleSuggestions.add(doc.title);
+          if (titleSuggestions.size >= limit) break;
+        }
+      }
+      
+      // Instructor suggestions
+      const instructorTokens = this.tokenize(doc.instructor);
+      for (const token of instructorTokens) {
+        if (token.startsWith(firstToken)) {
+          instructorSuggestions.add(doc.instructor);
+          if (instructorSuggestions.size >= limit) break;
+        }
+      }
+
+      // Category suggestions
+      const categoryTokens = this.tokenize(doc.category);
+      for (const token of categoryTokens) {
+        if (token.startsWith(firstToken)) {
+          categorySuggestions.add(doc.category);
+          if (categorySuggestions.size >= limit) break;
         }
       }
     });
     
-    if (suggestions.size < limit) {
+    // If we don't have enough suggestions, try fuzzy search
+    if (titleSuggestions.size < limit || instructorSuggestions.size < limit || categorySuggestions.size < limit) {
       const fuzzyResults = this.fuzzySearch(queryTokens);
       
       for (const id of fuzzyResults) {
-        suggestions.add(this.documentMap[id].title);
-        if (suggestions.size >= limit) break;
+        const doc = this.documentMap[id];
+        if (titleSuggestions.size < limit) {
+          titleSuggestions.add(doc.title);
+        }
+        if (instructorSuggestions.size < limit) {
+          instructorSuggestions.add(doc.instructor);
+        }
+        if (categorySuggestions.size < limit) {
+          categorySuggestions.add(doc.category);
+        }
+        if (titleSuggestions.size >= limit && 
+            instructorSuggestions.size >= limit && 
+            categorySuggestions.size >= limit) break;
       }
     }
     
-    return Array.from(suggestions).slice(0, limit);
+    const suggestions: { text: string; category: 'title' | 'instructor' | 'category' }[] = [
+      ...Array.from(titleSuggestions).slice(0, limit).map(text => ({ text, category: 'title' as const })),
+      ...Array.from(instructorSuggestions).slice(0, limit).map(text => ({ text, category: 'instructor' as const })),
+      ...Array.from(categorySuggestions).slice(0, limit).map(text => ({ text, category: 'category' as const })),
+    ];
+    
+    return suggestions;
   }
 
   getCategories(): FilterOption[] {
@@ -420,7 +483,7 @@ export function useSearchEngine(courses: CourseItemProps[]) {
   });
   const [searchResults, setSearchResults] = useState<CourseItemProps[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
+  const [searchSuggestions, setSearchSuggestions] = useState<{ text: string; category: 'title' | 'instructor' | 'category' }[]>([]);
   
   const searchIndex = useMemo(() => new SearchIndex(courses), [courses]);
   
