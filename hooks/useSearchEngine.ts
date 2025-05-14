@@ -1,5 +1,4 @@
-import type { CourseItemProps } from '@/components/CourseItem';
-import type { FilterOption, Filters } from '@/components/search/FilterPanel';
+import type { CourseItemProps, FilterOption, Filters, Suggestion } from '@/types';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 /**
@@ -173,6 +172,12 @@ class SearchIndex {
       .replace(/[^\w]/g, '_');
   }
 
+  private matchHighlight(text: string, query: string): string {
+    const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(${escapedQuery})`, 'i');
+    return text.replace(regex, '<b>$1</b>');
+  }
+
   /**
    * Basic Spanish word stemming.
    * Removes common suffixes to match similar words
@@ -242,8 +247,11 @@ class SearchIndex {
     const cacheKey = JSON.stringify({ query, filters });
   
     if (this.cache.has(cacheKey)) {
+      console.log('Cache hit for query:', query);
       return this.cache.get(cacheKey)!;
     }
+
+    console.log('Cache miss for query:', query);
   
     if (!query && !this.hasActiveFilters(filters)) {
       this.cache.set(cacheKey, this.documents);
@@ -384,7 +392,7 @@ class SearchIndex {
     );
   }
 
-  getSuggestions(query: string, limit = 5): { text: string; category: 'title' | 'instructor' | 'category' }[] {
+  getSuggestions(query: string, limit = 5): Suggestion[] {
     if (!query) return [];
     
     const queryTokens = this.tokenize(query);
@@ -394,14 +402,16 @@ class SearchIndex {
     const titleSuggestions = new Set<string>();
     const instructorSuggestions = new Set<string>();
     const categorySuggestions = new Set<string>();
+    const suggestions: Suggestion[] = [];
     
+    // First pass: collect all unique matches
     this.documents.forEach(doc => {
       // Title suggestions
       const titleTokens = this.tokenize(doc.title);
       for (const token of titleTokens) {
         if (token.startsWith(firstToken)) {
           titleSuggestions.add(doc.title);
-          if (titleSuggestions.size >= limit) break;
+          break;
         }
       }
       
@@ -410,7 +420,7 @@ class SearchIndex {
       for (const token of instructorTokens) {
         if (token.startsWith(firstToken)) {
           instructorSuggestions.add(doc.instructor);
-          if (instructorSuggestions.size >= limit) break;
+          break;
         }
       }
 
@@ -419,7 +429,7 @@ class SearchIndex {
       for (const token of categoryTokens) {
         if (token.startsWith(firstToken)) {
           categorySuggestions.add(doc.category);
-          if (categorySuggestions.size >= limit) break;
+          break;
         }
       }
     });
@@ -430,29 +440,65 @@ class SearchIndex {
       
       for (const id of fuzzyResults) {
         const doc = this.documentMap[id];
-        if (titleSuggestions.size < limit) {
-          titleSuggestions.add(doc.title);
-        }
-        if (instructorSuggestions.size < limit) {
-          instructorSuggestions.add(doc.instructor);
-        }
-        if (categorySuggestions.size < limit) {
-          categorySuggestions.add(doc.category);
-        }
-        if (titleSuggestions.size >= limit && 
-            instructorSuggestions.size >= limit && 
-            categorySuggestions.size >= limit) break;
+        titleSuggestions.add(doc.title);
+        instructorSuggestions.add(doc.instructor);
+        categorySuggestions.add(doc.category);
       }
     }
     
-    const suggestions: { text: string; category: 'title' | 'instructor' | 'category' }[] = [
-      ...Array.from(titleSuggestions).slice(0, limit).map(text => ({ text, category: 'title' as const })),
-      ...Array.from(instructorSuggestions).slice(0, limit).map(text => ({ text, category: 'instructor' as const })),
-      ...Array.from(categorySuggestions).slice(0, limit).map(text => ({ text, category: 'category' as const })),
-    ];
+    // Convert to suggestions with highlights and reasons
+    // First titles (with instructor reasons if matching)
+    Array.from(titleSuggestions).slice(0, limit).forEach(title => {
+      const doc = this.documents.find(d => d.title === title);
+      if (!doc) return;
+      
+      const suggestion: Suggestion = {
+        text: title,
+        category: 'title',
+        course: doc
+      };
+      
+      // Add reason if instructor matches
+      if (this.tokenize(doc.instructor).some(t => t.startsWith(firstToken))) {
+        suggestion.reason = {
+          label: 'instructor',
+          value: doc.instructor,
+          highlight: this.matchHighlight(doc.instructor, query)
+        };
+      }
+      
+      suggestions.push(suggestion);
+    });
+    
+    // Then instructors
+    Array.from(instructorSuggestions).slice(0, limit).forEach(instructor => {
+      suggestions.push({
+        text: instructor,
+        category: 'instructor',
+        reason: {
+          label: 'instructor',
+          value: instructor,
+          highlight: this.matchHighlight(instructor, query)
+        }
+      });
+    });
+    
+    // Finally categories
+    Array.from(categorySuggestions).slice(0, limit).forEach(category => {
+      suggestions.push({
+        text: category,
+        category: 'category',
+        reason: {
+          label: 'categoria',
+          value: category,
+          highlight: this.matchHighlight(category, query)
+        }
+      });
+    });
     
     return suggestions;
   }
+  
 
   getCategories(): FilterOption[] {
     return Object.values(this.categoryMap);

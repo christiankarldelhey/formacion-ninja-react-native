@@ -4,18 +4,20 @@ import { StyleSheet, TouchableOpacity, Image, Platform } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 
+import type { CourseItemProps } from '@/types';
+
 // [FLOW STEP 6] - Course Item Interface
 // Define the shape of data required for each course item
-export type CourseItemProps = {
-  id: string;
-  title: string;
-  category: string;
-  instructor: string;
-  duration: string;
-  thumbnail: string;
-  viewCount: string;
-  onPress?: () => void;
-};
+// export type CourseItemProps = {
+//   id: string;
+//   title: string;
+//   category: string;
+//   instructor: string;
+//   duration: string;
+//   thumbnail: string;
+//   viewCount: number;
+//   onPress?: () => void;
+// };
 
 // [FLOW STEP 7] - Course Item Component
 // Reusable component that displays a single course with consistent styling

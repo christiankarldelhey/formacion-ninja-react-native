@@ -1,6 +1,6 @@
 // [FLOW STEP 1] - Data Definition
 // This file serves as the data source for all courses in the application
-import { CourseItemProps } from '@/components/CourseItem';
+import type { CourseItemProps } from '@/types';
 
 // Categorías de oposiciones
 const CATEGORIES = [
@@ -101,6 +101,6 @@ export const COURSES_DATA: CourseItemProps[] = Array.from({ length: 100 }, (_, i
     instructor: INSTRUCTORS[index % INSTRUCTORS.length],
     duration: DURATIONS[index % DURATIONS.length],
     thumbnail: generateThumbnail(id),
-    viewCount: VIEWS[index % VIEWS.length],
+    viewCount: parseInt(VIEWS[index % VIEWS.length].replace('K', '000').replace('.', '')),
   };
 }); 

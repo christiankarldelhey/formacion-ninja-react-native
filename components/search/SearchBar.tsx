@@ -1,22 +1,13 @@
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { Text } from 'react-native';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import React, { useRef, useState } from 'react';
-import { Animated, FlatList, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import { Animated, FlatList, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 
-type Suggestion = {
-  text: string;
-  category: 'title' | 'instructor' | 'category';
-};
-
-type SearchBarProps = {
-  query: string;
-  onChangeQuery: (text: string) => void;
-  onSearch: () => void;
-  suggestions: Suggestion[];
-};
+import type { SearchBarProps } from '@/types';
 
 export function SearchBar({ query, onChangeQuery, onSearch, suggestions }: SearchBarProps) {
   const [isFocused, setIsFocused] = useState(false);
@@ -73,6 +64,18 @@ export function SearchBar({ query, onChangeQuery, onSearch, suggestions }: Searc
     onChangeQuery(suggestion);
     setShowSuggestions(false);
     onSearch();
+  };
+
+  const parseHighlight = (html: string) => {
+    const parts = html.split(/(<b>|<\/b>)/);
+    return parts.map((part, i) =>
+      part === '<b>' || part === '</b>' ? null :
+      html.includes('<b>') && i % 2 === 1 ? (
+        <Text key={i} style={{ fontWeight: '700' }}>{part}</Text>
+      ) : (
+        <Text key={i}>{part}</Text>
+      )
+    );
   };
 
   return (
@@ -146,19 +149,32 @@ export function SearchBar({ query, onChangeQuery, onSearch, suggestions }: Searc
                     </ThemedView>
                   )}
                   <TouchableOpacity
-                    style={styles.suggestionItem}
-                    onPress={() => handleSelectSuggestion(item.text)}
-                  >
-                    <IconSymbol 
-                      name={item.category === 'title' ? 'doc.text' : 
-                           item.category === 'instructor' ? 'person' : 
-                           'folder'}
-                      size={16} 
-                      color={Colors[colorScheme].icon} 
-                      style={styles.suggestionIcon}
-                    />
+                  style={styles.suggestionItem}
+                  onPress={() => handleSelectSuggestion(item.text)}
+                >
+                  <IconSymbol 
+                    name={
+                      item.category === 'title' ? 'doc.text' : 
+                      item.category === 'instructor' ? 'person' : 
+                      'folder'
+                    }
+                    size={16} 
+                    color={Colors[colorScheme].icon} 
+                    style={styles.suggestionIcon}
+                  />
+
+                  <View style={{ flex: 1 }}>
                     <ThemedText numberOfLines={1}>{item.text}</ThemedText>
-                  </TouchableOpacity>
+
+                    {item.reason && (
+                      <Text numberOfLines={1} style={{ color: Colors[colorScheme].text }}>
+                        <Text>{item.reason.label}: </Text>
+                        {parseHighlight(item.reason.highlight)}
+                      </Text>
+                    )}
+                  </View>
+                </TouchableOpacity>
+
                 </>
               );
             }}

@@ -6,26 +6,7 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import React, { useState } from 'react';
 import { StyleSheet, ScrollView, TouchableOpacity, View } from 'react-native';
 
-export type FilterOption = {
-  id: string;
-  label: string;
-  count?: number;
-};
-
-export type Filters = {
-  categories: string[];
-  durations: string[];
-  levels: string[];
-};
-
-type FilterPanelProps = {
-  categories: FilterOption[];
-  durations: FilterOption[];
-  levels: FilterOption[];
-  selectedFilters: Filters;
-  onFilterChange: (filters: Filters) => void;
-  onClearFilters: () => void;
-};
+import type { FilterOption, Filters, FilterPanelProps } from '@/types';
 
 export function FilterPanel({
   categories,
@@ -118,12 +99,7 @@ export function FilterPanel({
             </TouchableOpacity>
           </TouchableOpacity>
         ))}
-        
-        {allSelected.length > 0 && (
-          <TouchableOpacity onPress={onClearFilters} style={styles.clearChip}>
-            <ThemedText style={styles.clearChipText}>Borrar todos</ThemedText>
-          </TouchableOpacity>
-        )}
+
       </View>
     );
   };

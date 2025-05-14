@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
+import { Suggestion } from '@/types';
 import { FilterPanel } from '@/components/search/FilterPanel';
 import { SearchBar } from '@/components/search/SearchBar';
 import { SearchResults } from '@/components/search/SearchResults';
@@ -37,10 +37,6 @@ export default function ExploreScreen() {
     return () => clearTimeout(timer);
   }, []);
 
-  type Suggestion = {
-    text: string;
-    category: 'title' | 'instructor' | 'category';
-  };
 
   if (isLoading) {
     return (

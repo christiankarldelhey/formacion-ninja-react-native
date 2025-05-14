@@ -1,16 +1,10 @@
-import { CourseItem, CourseItemProps } from '@/components/CourseItem';
+import type { CourseItemProps, SearchResultsProps } from '@/types';
+import { CourseItem } from '@/components/CourseItem';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import React from 'react';
 import { ActivityIndicator, FlatList, StyleSheet } from 'react-native';
-import { Filters } from './FilterPanel';
-
-type SearchResultsProps = {
-  results: CourseItemProps[];
-  isSearching: boolean;
-  searchQuery: string;
-  filters: Filters;
-};
+import type { Filters } from '@/types';
 
 const EmptyList = ({ searchQuery, filters }: { searchQuery: string, filters: Filters }) => {
   const hasActiveSearch = searchQuery.length > 0;
