@@ -179,8 +179,8 @@ export function FilterPanel({
 
   return (
     <ThemedView style={styles.container}>
+      {renderFilterChips()}
       <ThemedView style={styles.header}>
-        <ThemedText type="defaultSemiBold">Filtros</ThemedText>
         {hasActiveFilters() && (
           <TouchableOpacity onPress={onClearFilters}>
             <ThemedText style={styles.clearText}>Borrar todos</ThemedText>
@@ -188,7 +188,7 @@ export function FilterPanel({
         )}
       </ThemedView>
 
-      {renderFilterChips()}
+      
       {renderFilterSections()}
     </ThemedView>
   );
@@ -206,9 +206,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    backgroundColor: '#1a1a1a',
+    marginBottom: 0,
   },
   clearText: {
+    paddingVertical: 8,
     color: '#0a7ea4',
     fontSize: 14,
   },
@@ -228,7 +230,7 @@ const styles = StyleSheet.create({
   optionsContainer: {
     backgroundColor: '#2a2a2a',
     borderRadius: 8,
-    marginTop: 8,
+    marginTop: 0,
   },
   scrollContainer: {
     flex: 1,

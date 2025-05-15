@@ -9,6 +9,8 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { COURSES_DATA } from '@/constants/CoursesData';
 import { useSearchEngine } from '@/hooks/useSearchEngine';
+import { IconSymbol } from '@/components/ui/IconSymbol';
+import { Colors } from '@/constants/Colors';
 
 export default function ExploreScreen() {
   const [isLoading, setIsLoading] = useState(true);
@@ -68,7 +70,13 @@ export default function ExploreScreen() {
           style={styles.filtersToggle}
           onPress={() => setShowFilters(!showFilters)}
         >
-          {showFilters ? "Ocultar filtros" : "Mostrar filtros"}
+          <IconSymbol 
+            name="line.horizontal.3.decrease" 
+            size={18} 
+            color="#0a7ea4"
+            style={styles.filterIcon}
+          />
+          {" "}{showFilters ? "Ocultar filtros" : "Mostrar filtros"}
         </ThemedText>
       </ThemedView>
       
@@ -123,10 +131,15 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   filtersToggleContainer: {
+    paddingVertical: 8,
     paddingHorizontal: 16,
     paddingBottom: 8,
   },
   filtersToggle: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     color: '#0a7ea4',
     fontWeight: '600',
   },

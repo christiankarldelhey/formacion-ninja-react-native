@@ -23,7 +23,8 @@ const MAPPING = {
   'book.fill': 'menu-book',
   'magnifyingglass': 'search',  
   'clock': 'schedule',          
-  'xmark.circle.fill': 'cancel' 
+  'xmark.circle.fill': 'cancel',
+  'line.horizontal.3.decrease': 'tune'
 } as IconMapping;
 
 /**
