@@ -84,7 +84,12 @@ export function SearchResults({
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={() => <EmptyList searchQuery={searchQuery} filters={filters} />}
           ListHeaderComponent={ListHeader}
-          initialNumToRender={20}
+          initialNumToRender={5}
+          maxToRenderPerBatch={5}
+          windowSize={5}
+          removeClippedSubviews={true}
+          updateCellsBatchingPeriod={100}
+          onEndReachedThreshold={0.5}
         />
       )}
     </ThemedView>
