@@ -1,6 +1,6 @@
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { Text } from 'react-native';
+import { Text, Alert } from 'react-native';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -162,7 +162,11 @@ export function SearchBar({ query, onChangeQuery, onSearch, suggestions }: Searc
                   )}
                   <TouchableOpacity
                   style={styles.suggestionItem}
-                  onPress={() => handleSelectSuggestion(item.text)}
+                  onPress={() => {
+                    if (item.course) {
+                      console.log(`Curso seleccionado: ${item.course.id}`);
+                    }
+                  }}
                 >
                   <IconSymbol 
                     name={
