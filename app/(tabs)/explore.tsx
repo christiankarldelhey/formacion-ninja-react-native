@@ -11,6 +11,7 @@ import { COURSES_DATA } from '@/constants/CoursesData';
 import { useSearchEngine } from '@/hooks/useSearchEngine';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
+import { Dictionary } from '@/constants/Dictionary';
 
 export default function ExploreScreen() {
   const [isLoading, setIsLoading] = useState(true);
@@ -44,7 +45,7 @@ export default function ExploreScreen() {
     return (
       <SafeAreaView style={styles.loadingContainer} edges={['top']}>
         <ActivityIndicator size="large" />
-        <ThemedText style={styles.loadingText}>Inicializando motor de búsqueda...</ThemedText>
+        <ThemedText style={styles.loadingText}>{Dictionary.explore.loading}</ThemedText>
       </SafeAreaView>
     );
   }
@@ -52,9 +53,9 @@ export default function ExploreScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <ThemedView style={styles.header}>
-        <ThemedText style={styles.headerTitle}>Explorar Cursos</ThemedText>
+        <ThemedText style={styles.headerTitle}>{Dictionary.explore.title}</ThemedText>
         <ThemedText style={styles.subtitle}>
-          Busca entre miles de cursos para oposiciones
+          {Dictionary.explore.subtitle}
         </ThemedText>
       </ThemedView>
 
@@ -76,7 +77,7 @@ export default function ExploreScreen() {
             color="#0a7ea4"
             style={styles.filterIcon}
           />
-          {" "}{showFilters ? "Ocultar filtros" : "Mostrar filtros"}
+          {showFilters ? Dictionary.explore.hideFilters : Dictionary.explore.showFilters}
         </ThemedText>
       </ThemedView>
       

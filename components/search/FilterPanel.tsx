@@ -1,10 +1,11 @@
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { Dictionary } from '@/constants/Dictionary';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import React, { useState } from 'react';
-import { StyleSheet, ScrollView, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 import type { FilterOption, Filters, FilterPanelProps } from '@/types';
 
@@ -112,7 +113,7 @@ export function FilterPanel({
             style={styles.sectionHeader} 
             onPress={() => toggleSection(section)}
           >
-            <ThemedText>{section === 'categories' ? 'Categorías' : section === 'durations' ? 'Duración' : 'Nivel'}</ThemedText>
+            <ThemedText>{section === 'categories' ? Dictionary.filters.categories : section === 'durations' ? Dictionary.filters.duration : Dictionary.filters.level}</ThemedText>
             <IconSymbol 
               name={expandedSection === section ? 'chevron.up' : 'chevron.down'} 
               size={16} 
@@ -183,7 +184,7 @@ export function FilterPanel({
       <ThemedView style={styles.header}>
         {hasActiveFilters() && (
           <TouchableOpacity onPress={onClearFilters}>
-            <ThemedText style={styles.clearText}>Borrar todos</ThemedText>
+            <ThemedText style={styles.clearText}>{Dictionary.filters.clearAll}</ThemedText>
           </TouchableOpacity>
         )}
       </ThemedView>

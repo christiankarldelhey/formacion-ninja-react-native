@@ -2,6 +2,7 @@ import type { CourseItemProps, SearchResultsProps } from '@/types';
 import { CourseItem } from '@/components/CourseItem';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { Dictionary } from '@/constants/Dictionary';
 import React from 'react';
 import { ActivityIndicator, FlatList, StyleSheet } from 'react-native';
 import type { Filters } from '@/types';
@@ -16,9 +17,9 @@ const EmptyList = ({ searchQuery, filters }: { searchQuery: string, filters: Fil
   if (hasActiveSearch || hasActiveFilters) {
     return (
       <ThemedView style={styles.emptyContainer}>
-        <ThemedText style={styles.emptyTitle}>No se encontraron cursos</ThemedText>
+        <ThemedText style={styles.emptyTitle}>{Dictionary.search.noResults}</ThemedText>
         <ThemedText style={styles.emptySubtitle}>
-          Prueba con otros términos de búsqueda o filtros diferentes
+          {Dictionary.search.tryAgain}
         </ThemedText>
       </ThemedView>
     );
@@ -26,9 +27,9 @@ const EmptyList = ({ searchQuery, filters }: { searchQuery: string, filters: Fil
   
   return (
     <ThemedView style={styles.emptyContainer}>
-      <ThemedText style={styles.emptyTitle}>Explora los cursos disponibles</ThemedText>
+      <ThemedText style={styles.emptyTitle}>{Dictionary.search.explore}</ThemedText>
       <ThemedText style={styles.emptySubtitle}>
-        Usa el buscador o los filtros para encontrar cursos
+        {Dictionary.search.useSearch}
       </ThemedText>
     </ThemedView>
   );
@@ -60,7 +61,7 @@ export function SearchResults({
   const ListHeader = () => {
     return results.length > 0 ? (
       <ThemedText style={styles.resultsCount}>
-        {results.length} {results.length === 1 ? 'curso encontrado' : 'cursos encontrados'}
+        {Dictionary.search.resultsCount(results.length)}
       </ThemedText>
     ) : null;
   };
@@ -68,7 +69,7 @@ export function SearchResults({
   const LoadingView = () => (
     <ThemedView style={styles.loadingContainer}>
       <ActivityIndicator size="large" />
-      <ThemedText style={styles.loadingText}>Buscando cursos...</ThemedText>
+      <ThemedText style={styles.loadingText}>{Dictionary.search.searching}</ThemedText>
     </ThemedView>
   );
   

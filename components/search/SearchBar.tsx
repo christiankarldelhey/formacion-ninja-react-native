@@ -1,9 +1,10 @@
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { Text, Alert } from 'react-native';
+import { Text } from 'react-native';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { Dictionary } from '@/constants/Dictionary';
 import React, { useRef, useState } from 'react';
 import { Animated, FlatList, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 
@@ -109,7 +110,7 @@ export function SearchBar({ query, onChangeQuery, onSearch, suggestions }: Searc
             styles.input, 
             { color: Colors[colorScheme].text }
           ]}
-          placeholder="Buscar cursos..."
+          placeholder={Dictionary.search.placeholder}
           placeholderTextColor={Colors[colorScheme].icon}
           value={query}
           onChangeText={handleChangeText}
@@ -154,9 +155,9 @@ export function SearchBar({ query, onChangeQuery, onSearch, suggestions }: Searc
                   {showHeader && (
                     <ThemedView style={styles.categoryHeader}>
                       <ThemedText style={styles.categoryHeaderText}>
-                        {item.category === 'title' ? 'Cursos' : 
-                         item.category === 'instructor' ? 'Instructores' : 
-                         'Categorías'}
+                        {item.category === 'title' ? Dictionary.suggestions.courses : 
+                         item.category === 'instructor' ? Dictionary.suggestions.instructors : 
+                         Dictionary.suggestions.categories}
                       </ThemedText>
                     </ThemedView>
                   )}
