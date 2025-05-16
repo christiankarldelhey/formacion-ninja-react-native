@@ -1,5 +1,6 @@
 import type { CourseItemProps, FilterOption, Filters, Suggestion } from '@/types';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { levenshteinDistance, matchHighlight, tokenize, normalizeText, stemWord, durationToMinutes, normalizeForId } from '@/utils/searchUtils';
 
 /**
  * SearchIndex implements a full-text search engine with filtering capabilities.
@@ -38,7 +39,7 @@ class SearchIndex {
     this.documents.forEach(doc => {
       this.documentMap[doc.id] = doc;
       
-      const tokens = this.tokenize(doc.title + ' ' + doc.category + ' ' + doc.instructor);
+      const tokens = tokenize(doc.title + ' ' + doc.category + ' ' + doc.instructor);
       
       tokens.forEach(token => {
         if (!this.invertedIndex[token]) {
@@ -64,7 +65,7 @@ class SearchIndex {
     });
     
     categories.forEach((count, category) => {
-      const id = this.normalizeForId(category);
+      const id = normalizeForId(category);
       this.categoryMap[id] = {
         id,
         label: category,
@@ -85,7 +86,7 @@ class SearchIndex {
     };
     
     this.documents.forEach(doc => {
-      const minutes = this.durationToMinutes(doc.duration);
+      const minutes = durationToMinutes(doc.duration);
       
       if (minutes < 180) {
         durationRanges.short.count++;
@@ -135,108 +136,6 @@ class SearchIndex {
     });
   }
 
-  private durationToMinutes(duration: string): number {
-    const parts = duration.split(':');
-    return parseInt(parts[0]) * 60 + parseInt(parts[1]);
-  }
-
-  /**
-   * Converts text into searchable tokens:
-   * 1. Converts to lowercase
-   * 2. Removes special characters
-   * 3. Splits into words
-   * 4. Removes short words
-   * 5. Applies word stemming
-   */
-  private tokenize(text: string): string[] {
-    const normalized = this.normalizeText(text);
-    return normalized
-      .replace(/[^\w\s]/g, '')
-      .split(/\s+/)
-      .filter(token => token.length >= 2)
-      .map(token => this.stemWord(token));
-  }
-
-  private normalizeText(text: string): string {
-    return text
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/ñ/g, 'n')
-      .replace(/ü/g, 'u')
-      .toLowerCase();
-  }
-
-  private normalizeForId(text: string): string {
-    return text
-      .toLowerCase()
-      .replace(/[^\w]/g, '_');
-  }
-
-  private matchHighlight(text: string, query: string): string {
-    const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const regex = new RegExp(`(${escapedQuery})`, 'i');
-    return text.replace(regex, '<b>$1</b>');
-  }
-
-  /**
-   * Basic Spanish word stemming.
-   * Removes common suffixes to match similar words
-   * (e.g., 'programación' and 'programador' -> 'program')
-   */
-  private stemWord(word: string): string {
-    const suffixes = [
-      'ciones', 'cion', 'mente', 'idades', 'idad',
-      'icamente', 'ista', 'istas', 'izar', 'izado', 'izacion',
-      'ante', 'antes', 'able', 'ibles',
-      'ador', 'adores', 'adora', 'adoras',
-      'ando', 'iendo', 'ado', 'ido', 'aba', 'ia', 'ar', 'er', 'ir'
-    ];
-  
-    for (const suffix of suffixes) {
-      if (word.endsWith(suffix) && word.length > suffix.length + 2) {
-        word = word.slice(0, -suffix.length);
-        break;
-      }
-    }
-  
-    if (word.endsWith('es') && word.length > 4) {
-      word = word.slice(0, -2);
-    } else if (word.endsWith('s') && word.length > 3) {
-      word = word.slice(0, -1);
-    }
-  
-    return word;
-  }
-
-  /**
-   * Calculates the edit distance between two strings.
-   * Used for fuzzy search to find similar words even with typos.
-   */
-  private levenshteinDistance(a: string, b: string): number {
-    const matrix: number[][] = [];
-    
-    for (let i = 0; i <= a.length; i++) {
-      matrix[i] = [i];
-    }
-    
-    for (let j = 0; j <= b.length; j++) {
-      matrix[0][j] = j;
-    }
-    
-    for (let i = 1; i <= a.length; i++) {
-      for (let j = 1; j <= b.length; j++) {
-        const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-        matrix[i][j] = Math.min(
-          matrix[i - 1][j] + 1,
-          matrix[i][j - 1] + 1,
-          matrix[i - 1][j - 1] + cost
-        );
-      }
-    }
-    
-    return matrix[a.length][b.length];
-  }
-
   /**
    * Main search function that combines:
    * 1. Full-text search (exact and fuzzy)
@@ -261,7 +160,7 @@ class SearchIndex {
     let resultIds: Set<string> = new Set();
   
     if (query) {
-      const queryTokens = this.tokenize(query);
+      const queryTokens = tokenize(query);
       const exactMatches = this.exactSearch(queryTokens);
       exactMatches.forEach(id => resultIds.add(id));
   
@@ -332,7 +231,7 @@ class SearchIndex {
       const maxDistance = Math.min(2, Math.floor(queryToken.length / 3));
       
       allTokens.forEach(indexToken => {
-        const distance = this.levenshteinDistance(queryToken, indexToken);
+        const distance = levenshteinDistance(queryToken, indexToken);
         
         if (distance <= maxDistance) {
           this.invertedIndex[indexToken].forEach(id => fuzzyMatches.add(id));
@@ -355,14 +254,14 @@ class SearchIndex {
         const doc = this.documentMap[id];
         
         if (filters.categories.length > 0) {
-          const categoryId = this.normalizeForId(doc.category);
+          const categoryId = normalizeForId(doc.category);
           if (!filters.categories.includes(categoryId)) {
             return false;
           }
         }
         
         if (filters.durations.length > 0) {
-          const minutes = this.durationToMinutes(doc.duration);
+          const minutes = durationToMinutes(doc.duration);
           const durationMatch = filters.durations.some(durationId => {
             if (durationId === 'short') return minutes < 180;
             if (durationId === 'medium') return minutes >= 180 && minutes < 360;
@@ -395,7 +294,7 @@ class SearchIndex {
   getSuggestions(query: string, limit = 5): Suggestion[] {
     if (!query) return [];
     
-    const queryTokens = this.tokenize(query);
+    const queryTokens = tokenize(query);
     if (queryTokens.length === 0) return [];
     
     const firstToken = queryTokens[0];
@@ -407,7 +306,7 @@ class SearchIndex {
     // First pass: collect all unique matches
     this.documents.forEach(doc => {
       // Title suggestions
-      const titleTokens = this.tokenize(doc.title);
+      const titleTokens = tokenize(doc.title);
       for (const token of titleTokens) {
         if (token.startsWith(firstToken)) {
           titleSuggestions.add(doc.title);
@@ -416,7 +315,7 @@ class SearchIndex {
       }
       
       // Instructor suggestions
-      const instructorTokens = this.tokenize(doc.instructor);
+      const instructorTokens = tokenize(doc.instructor);
       for (const token of instructorTokens) {
         if (token.startsWith(firstToken)) {
           instructorSuggestions.add(doc.instructor);
@@ -425,7 +324,7 @@ class SearchIndex {
       }
 
       // Category suggestions
-      const categoryTokens = this.tokenize(doc.category);
+      const categoryTokens = tokenize(doc.category);
       for (const token of categoryTokens) {
         if (token.startsWith(firstToken)) {
           categorySuggestions.add(doc.category);
@@ -459,11 +358,11 @@ class SearchIndex {
       };
       
       // Add reason if instructor matches
-      if (this.tokenize(doc.instructor).some(t => t.startsWith(firstToken))) {
+      if (tokenize(doc.instructor).some(t => t.startsWith(firstToken))) {
         suggestion.reason = {
           label: 'instructor',
           value: doc.instructor,
-          highlight: this.matchHighlight(doc.instructor, query)
+          highlight: matchHighlight(doc.instructor, query)
         };
       }
       
@@ -478,7 +377,7 @@ class SearchIndex {
         reason: {
           label: 'instructor',
           value: instructor,
-          highlight: this.matchHighlight(instructor, query)
+          highlight: matchHighlight(instructor, query)
         }
       });
     });
@@ -491,7 +390,7 @@ class SearchIndex {
         reason: {
           label: 'categoria',
           value: category,
-          highlight: this.matchHighlight(category, query)
+          highlight: matchHighlight(category, query)
         }
       });
     });
